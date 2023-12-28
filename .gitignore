@@ -1,0 +1,10 @@
+*temp*
+.vscode
+.venv
+.DS_Store
+__pycache__
+*todo*
+*.opml*
+*.rss
+*.sqlite
+pyvenv.cfg
