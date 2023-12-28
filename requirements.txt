@@ -1,0 +1,4 @@
+feedparser
+simple-term-menu
+tabulate
+validators
