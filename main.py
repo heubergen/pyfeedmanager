@@ -25,6 +25,7 @@ if __name__ == "__main__":
                         print('ERROR: No opml file could be found, please put your opml file in the directory of this script, make sure the python process can read it and it follows the following pattern: ' + opml_wildcard_pattern)
                     for opmlFile in opmlFiles:
                         opmlImport(opmlFile)
+                    print('OPML import finished')
                 case 1:
                     unsafeAddChoice = input('Please add the name/URL you want to add ')
                     safeInput =  validateURL(unsafeAddChoice)

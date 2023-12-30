@@ -10,7 +10,7 @@ from categories import chooseCategory
 
 db = 'data.sqlite'
 http_custom_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0'
-version = '0.1.0'
+version = '0.1.1'
 
 def directlyError():
     raise SystemError('You must not open this file directly!')
@@ -49,7 +49,10 @@ def validateURL(unsafeInput):
 			errorMsg = 'Opening ' + unsafeInput + ' has failed with the httpd code ' + str(e.code)
 			return False,errorMsg
 		except URLError:
-			errorMsg = unsafeInput + ' could not be resolved or an unknown error occured'
+			errorMsg = unsafeInput + ' could not be resolved or an unknown error occurred'
+			return False,errorMsg
+		except TimeoutError:
+			errorMsg = unsafeInput + ' timed out'
 			return False,errorMsg
 		try:
 			result = feedparser(feed_data.read().decode('utf-8'))
@@ -79,5 +82,12 @@ def addFeed(feedURL, feedTitle, feedVersion):
 	if not uniqueCheck:
 		executeQuery("INSERT OR IGNORE INTO feeds (URL, Title, Type, Category_ID) VALUES (?,?,?,?);", (feedURL,feedTitle,feedVersion,feedCategoryID[0][0]))
 		print(feedTitle + ' added, after the next refresh the articles will be visible')
+	else:
+		print(feedTitle + ' already exists.')
+
+def addFeedFromOPML(feedURL, feedTitle, feedVersion,feedCategoryID):
+	uniqueCheck = executeQuery("SELECT * FROM feeds WHERE URL = ?", (feedURL,))
+	if not uniqueCheck:
+		executeQuery("INSERT OR IGNORE INTO feeds (URL, Title, Type, Category_ID) VALUES (?,?,?,?);", (feedURL,feedTitle,feedVersion,feedCategoryID))
 	else:
 		print(feedTitle + ' already exists.')

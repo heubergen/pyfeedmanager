@@ -1,5 +1,4 @@
-from manage import addFeed
-from common import validateURL
+from common import validateURL, addFeedFromOPML
 from glob import glob
 from os import getcwd, path
 from xml.etree.ElementTree import parse as xmlparse, ParseError
@@ -17,7 +16,8 @@ def opmlChildProcess(childsub,feedCategory):
 	else:
 		addCategory(feedCategory)
 		categoryID = getCategoryID(feedCategory)
-		addFeed(safeInput[0],safeInput[1],safeInput[2],categoryID)
+		print('Adding ' + safeInput[1] + ' to the database')
+		addFeedFromOPML(safeInput[0],safeInput[1],safeInput[2],categoryID)
 
 
 def opmlImport(opmlFile):
@@ -29,6 +29,7 @@ def opmlImport(opmlFile):
 			root.findall('.*/outline')[0].attrib["xmlUrl"] # If the first outline element is an entry we assume the opml file is flat
 		except KeyError:
 			for childmain in root.findall('.*/outline'):
+				feedCategory = childmain.attrib["title"]
 				for childsub in childmain.findall('.*'):
 					opmlChildProcess(childsub,feedCategory)
 		else:
