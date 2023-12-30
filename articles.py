@@ -3,10 +3,7 @@ from feedparser import parse
 from datetime import datetime
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
-
-softMaxFeedEntries = 50000
-hardMaxFeedEntries = 500000
-http_custom_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0'
+from config import configValues
 
 if __name__ == "__main__":
 	directlyError()
@@ -14,13 +11,13 @@ if __name__ == "__main__":
 def cleanupFeeds():
 	entryCount = executeQuery("SELECT COUNT(ID) FROM articles;")
 	entryreadCount = executeQuery("SELECT COUNT(ID) FROM articles WHERE read = 'true';")
-	if entryCount[0][0] > hardMaxFeedEntries:
-		if input('The hard limit of ' + str(hardMaxFeedEntries) + ' has been reached, please confirm if want delete unread entries(' + str(entryCount[0][0]) + ') to decrease the database size [y/n]').lower() == 'y':
-			toRemove = entryCount[0][0] - hardMaxFeedEntries
+	if entryCount[0][0] > configValues.hardMaxFeedEntries:
+		if input('The hard limit of ' + str(configValues.hardMaxFeedEntries) + ' has been reached, please confirm if want delete unread entries(' + str(entryCount[0][0]) + ') to decrease the database size [y/n]').lower() == 'y':
+			toRemove = entryCount[0][0] - configValues.hardMaxFeedEntries
 			executeQuery("DELETE FROM articles WHERE ID in (SELECT ID FROM articles ORDER BY addedDate ASC limit " + str(toRemove) + ");")
 		else:
 			pass
-	elif entryreadCount[0][0] > softMaxFeedEntries:
+	elif entryreadCount[0][0] > configValues.softMaxFeedEntries:
 		executeQuery("DELETE FROM articles WHERE read = 'true';")
 		print("Cleanup of read feed entries performed")
 	return
@@ -40,7 +37,7 @@ def updateFeeds():
 			pass
 		else:
 			try:
-				request = Request(feedRow[0], headers={'User-Agent': http_custom_user_agent})
+				request = Request(feedRow[0], headers={'User-Agent': configValues.http_custom_user_agent})
 				feed_data = urlopen(request, timeout=3)
 			except HTTPError as e:
 				print('Opening ' + feedRow[0] + ' has failed with the httpd code ' + str(e.code))
@@ -60,7 +57,8 @@ def updateFeeds():
 					if uniqueCheck == []:
 						text2html = HTMLFilter()
 						text2html.feed(entry.summary)
-						executeQuery("INSERT OR IGNORE INTO articles (Title, Summary, URL, feed_id, read, addedDate) VALUES (?,?,?,?,'false',?);", (entry.title,text2html.text[:50],entry.link,str(feedRow[2]),todayext))
+						articleDate = datetime.strptime(entry.published, '%a, %d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d %H:%M:%S')
+						executeQuery("INSERT OR IGNORE INTO articles (Title, Summary, URL, feed_id, read, addedDate, articleDate) VALUES (?,?,?,?,'false',?,?);", (entry.title,text2html.text[:50],entry.link,str(feedRow[2]),todayext, articleDate))
 				print(str(feedRow[3]) + ' was processed')
 				refreshedCount += 1
 			executeQuery("UPDATE feeds SET LastUpdated ='" + str(todayext) + "' WHERE ID = ?;", (str(feedRow[2]),))
@@ -74,10 +72,10 @@ def loadArticles():
 
 def viewArticles():
 	while True:
-		articlesListUnread = executeQuery("SELECT Title, Summary, URL FROM articles WHERE read ='false';")
+		articlesListUnread = executeQuery("SELECT Title, Summary, articleDate, URL FROM articles WHERE read ='false';")
 		if articlesListUnread == []:
 			updateFeeds()
-			articlesListUnread = executeQuery("SELECT Title, Summary, URL FROM articles WHERE read ='false';")
+			articlesListUnread = executeQuery("SELECT Title, Summary, articleDate, URL FROM articles WHERE read ='false';")
 			if articlesListUnread == []:
 				pass
 			else:

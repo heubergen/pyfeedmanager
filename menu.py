@@ -1,10 +1,7 @@
 from manage import manageData
 from common import directlyError, printVersion
 from simple_term_menu import TerminalMenu
-from os import getcwd
 
-opml_directory_path = getcwd()
-opml_wildcard_pattern = '*.opml'
 helpMenu = 'Welcome to pyfeedmanager! \nThis tool knows three different data: \n* Feeds (The URL where new articles can be found) \n* Articles (Each article is connected to a feed and contains the URL where you can read it \n* Categories (Each feed may be assinged to exactly one category))'
 
 def printHelpMenu():

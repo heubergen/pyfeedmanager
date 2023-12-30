@@ -1,12 +1,6 @@
 from common import validateURL, addFeedFromOPML
-from glob import glob
-from os import getcwd, path
 from xml.etree.ElementTree import parse as xmlparse, ParseError
 from categories import addCategory, getCategoryID
-
-opml_directory_path = getcwd()
-opml_wildcard_pattern = '*.opml'
-opmlFiles = glob(path.join(opml_directory_path, opml_wildcard_pattern))
 
 def opmlChildProcess(childsub,feedCategory):
 	feedURL = childsub.attrib["xmlUrl"]

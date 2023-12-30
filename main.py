@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-from menu import main_menu, printHelpMenu
+from menu import main_menu
 from setup import init_db
 from os import getcwd, path
 from glob import glob
 from opml import opmlImport
 from simple_term_menu import TerminalMenu
 from common import addFeed, validateURL
+from config import configValues
 
 opml_directory_path = getcwd()
-opml_wildcard_pattern = '*.opml'
 
 if __name__ == "__main__":
     try:
@@ -20,9 +20,9 @@ if __name__ == "__main__":
             terminal_menu = TerminalMenu(options)
             match terminal_menu.show():
                 case 0:
-                    opmlFiles = glob(path.join(opml_directory_path, opml_wildcard_pattern))
+                    opmlFiles = glob(path.join(opml_directory_path, configValues.opml_wildcard_pattern))
                     if opmlFiles == []:
-                        print('ERROR: No opml file could be found, please put your opml file in the directory of this script, make sure the python process can read it and it follows the following pattern: ' + opml_wildcard_pattern)
+                        print('ERROR: No opml file could be found, please put your opml file in the directory of this script, make sure the python process can read it and it follows the following pattern: ' + configValues.opml_wildcard_pattern)
                     for opmlFile in opmlFiles:
                         opmlImport(opmlFile)
                     print('OPML import finished')

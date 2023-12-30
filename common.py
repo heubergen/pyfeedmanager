@@ -7,10 +7,7 @@ from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from sys import version_info
 from categories import chooseCategory
-
-db = 'data.sqlite'
-http_custom_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0'
-version = '0.1.1'
+from config import configValues
 
 def directlyError():
     raise SystemError('You must not open this file directly!')
@@ -28,7 +25,7 @@ def unexpectedMatch():
 
 def executeQuery(DbQuery, params=None):
 	try:
-		conn = connect(db)
+		conn = connect(configValues.db)
 		with conn:
 			cur = conn.cursor()
 			if params is None:
@@ -43,7 +40,7 @@ def validateURL(unsafeInput):
 	unsafeInput = unsafeInput.replace(" ", "")
 	if validators_url(unsafeInput):
 		try:
-			request = Request(unsafeInput, headers={'User-Agent': http_custom_user_agent})
+			request = Request(unsafeInput, headers={'User-Agent': configValues.http_custom_user_agent})
 			feed_data = urlopen(request, timeout=3)
 		except HTTPError as e:
 			errorMsg = 'Opening ' + unsafeInput + ' has failed with the httpd code ' + str(e.code)
@@ -74,7 +71,7 @@ def tableListArticles(articlesListUnread):
 		executeQuery("UPDATE articles SET read = 'true' WHERE read ='false';")
 
 def printVersion():
-	print("py-feed-manager v" + version + "\nPython v" + str(version_info[0]) + "." + str(version_info[1])+ "." + str(version_info[2]))
+	print("py-feed-manager v" + configValues.version + "\nPython v" + str(version_info[0]) + "." + str(version_info[1])+ "." + str(version_info[2]))
 
 def addFeed(feedURL, feedTitle, feedVersion):
 	feedCategoryID = chooseCategory()
