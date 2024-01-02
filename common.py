@@ -8,6 +8,8 @@ from urllib.error import URLError, HTTPError
 from sys import version_info
 from categories import chooseCategory
 from config import configValues
+from env_secrets import secretValues
+from bs4 import BeautifulSoup
 
 def directlyError():
     raise SystemError('You must not open this file directly!')
@@ -36,12 +38,22 @@ def executeQuery(DbQuery, params=None):
 	finally:
 		conn.close()
 
-def validateURL(unsafeInput):
+def discoverFeed(content):
+	soup = BeautifulSoup(content, 'html.parser')
+	rss_link = soup.find('link', {'type': 'application/rss+xml'})
+	atom_link = soup.find('link', {'type': 'application/atom+xml'})
+	if rss_link:
+		return rss_link['href']
+	elif atom_link:
+		return atom_link['href']
+	else:
+		return None
+
+def validateURL(unsafeInput, urlWasDiscovered=None):
 	unsafeInput = unsafeInput.replace(" ", "")
 	if validators_url(unsafeInput):
 		try:
-			request = Request(unsafeInput, headers={'User-Agent': configValues.http_custom_user_agent})
-			feed_data = urlopen(request, timeout=3)
+			feed_data = urlopen(Request(unsafeInput, headers={'User-Agent': secretValues.http_custom_user_agent}), timeout=3)
 		except HTTPError as e:
 			errorMsg = 'Opening ' + unsafeInput + ' has failed with the httpd code ' + str(e.code)
 			return False,errorMsg
@@ -52,9 +64,13 @@ def validateURL(unsafeInput):
 			errorMsg = unsafeInput + ' timed out'
 			return False,errorMsg
 		try:
-			result = feedparser(feed_data.read().decode('utf-8'))
+			content = feed_data.read().decode('utf-8')
+			result = feedparser(content)
 			if (len(result['entries'])) > 0:
 				return unsafeInput, result.feed.title, result.version
+			elif urlWasDiscovered is None:
+				discoveredURL = discoverFeed(content)
+				return 'Discovered',discoveredURL
 			else:
 				errorMsg = unsafeInput + ' is not a feed or has no entries'
 				return False,errorMsg
@@ -74,16 +90,16 @@ def printVersion():
 	print("py-feed-manager v" + configValues.version + "\nPython v" + str(version_info[0]) + "." + str(version_info[1])+ "." + str(version_info[2]))
 
 def addFeed(feedURL, feedTitle, feedVersion):
-	feedCategoryID = chooseCategory()
-	uniqueCheck = executeQuery("SELECT * FROM feeds WHERE URL = ?", (feedURL,))
+	uniqueCheck = executeQuery("SELECT * FROM feeds WHERE Title = ?", (feedTitle,))
 	if not uniqueCheck:
+		feedCategoryID = chooseCategory()
 		executeQuery("INSERT OR IGNORE INTO feeds (URL, Title, Type, Category_ID) VALUES (?,?,?,?);", (feedURL,feedTitle,feedVersion,feedCategoryID[0][0]))
 		print(feedTitle + ' added, after the next refresh the articles will be visible')
 	else:
 		print(feedTitle + ' already exists.')
 
 def addFeedFromOPML(feedURL, feedTitle, feedVersion,feedCategoryID):
-	uniqueCheck = executeQuery("SELECT * FROM feeds WHERE URL = ?", (feedURL,))
+	uniqueCheck = executeQuery("SELECT * FROM feeds WHERE Title = ?", (feedTitle,))
 	if not uniqueCheck:
 		executeQuery("INSERT OR IGNORE INTO feeds (URL, Title, Type, Category_ID) VALUES (?,?,?,?);", (feedURL,feedTitle,feedVersion,feedCategoryID))
 	else:

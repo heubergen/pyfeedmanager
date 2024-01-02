@@ -4,6 +4,7 @@ from datetime import datetime
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from config import configValues
+from env_secrets import secretValues
 
 if __name__ == "__main__":
 	directlyError()
@@ -37,7 +38,7 @@ def updateFeeds():
 			pass
 		else:
 			try:
-				request = Request(feedRow[0], headers={'User-Agent': configValues.http_custom_user_agent})
+				request = Request(feedRow[0], headers={'User-Agent': secretValues.http_custom_user_agent})
 				feed_data = urlopen(request, timeout=3)
 			except HTTPError as e:
 				print('Opening ' + feedRow[0] + ' has failed with the httpd code ' + str(e.code))
@@ -57,8 +58,7 @@ def updateFeeds():
 					if uniqueCheck == []:
 						text2html = HTMLFilter()
 						text2html.feed(entry.summary)
-						articleDate = datetime.strptime(entry.published, '%a, %d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d %H:%M:%S')
-						executeQuery("INSERT OR IGNORE INTO articles (Title, Summary, URL, feed_id, read, addedDate, articleDate) VALUES (?,?,?,?,'false',?,?);", (entry.title,text2html.text[:50],entry.link,str(feedRow[2]),todayext, articleDate))
+						executeQuery("INSERT OR IGNORE INTO articles (Title, Summary, URL, feed_id, read, addedDate, articleDate) VALUES (?,?,?,?,'false',?,?);", (entry.title,text2html.text[:50],entry.link,str(feedRow[2]),todayext, entry.published))
 				print(str(feedRow[3]) + ' was processed')
 				refreshedCount += 1
 			executeQuery("UPDATE feeds SET LastUpdated ='" + str(todayext) + "' WHERE ID = ?;", (str(feedRow[2]),))

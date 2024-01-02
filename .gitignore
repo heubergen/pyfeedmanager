@@ -9,3 +9,4 @@ __pycache__
 *.sqlite
 pyvenv.cfg
 *.sqlite-journal
+env_secrets.py

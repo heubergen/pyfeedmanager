@@ -77,10 +77,12 @@ def updateData(dataType, updateChoice):
 def addData(dataType):
 	unsafeAddChoice = input('Please add the name/URL you want to add ')
 	if dataType == 'Feeds':
-		safeInput =  validateURL(unsafeAddChoice)
+		safeInput = validateURL(unsafeAddChoice)
 		if safeInput[0] == False:
 			print(safeInput[1])
 			return
+		elif safeInput[0] == 'Discovered':
+			safeInput = validateURL(safeInput[1], urlWasDiscovered='True')
 		addFeed(safeInput[0],safeInput[1],safeInput[2])
 	elif dataType == 'Categories':
 		categoryReturn = addCategory(unsafeAddChoice)

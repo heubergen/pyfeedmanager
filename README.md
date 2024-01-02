@@ -10,7 +10,9 @@ This script was developed with Python 3.11.6, make sure you have at least v3.11 
 pip install -r requirements.txt
 ```
 
-3. Now simply run the main.py file
+3. Change the templates in env_secrets.template and rename the file into env_secrets.py
+
+4. Now simply run the main.py file
 
 ```python
 python3 main.py
