@@ -1,5 +1,5 @@
 class configValues:
-    version = '0.3.0'
+    version = '0.4.0'
     db = 'data.sqlite'
     opml_wildcard_pattern = '*.opml'
     softMaxFeedEntries = 50000

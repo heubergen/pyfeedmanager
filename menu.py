@@ -2,7 +2,7 @@ from manage import manageData
 from common import directlyError, printVersion
 from simple_term_menu import TerminalMenu
 
-helpMenu = 'Welcome to pyfeedmanager! \nThis tool knows three different data: \n* Feeds (The URL where new articles can be found) \n* Articles (Each article is connected to a feed and contains the URL where you can read it \n* Categories (Each feed may be assinged to exactly one category))'
+helpMenu = '\npyfeedmanager  Copyright (C) 2024  heubergen\nThis program comes with ABSOLUTELY NO WARRANTY; for details read LICENSE.\nThis is free software, and you are welcome to redistribute it \nunder certain conditions; read LICENSE for details.'
 
 def printHelpMenu():
 	print(helpMenu)
